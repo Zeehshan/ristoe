@@ -16,6 +16,7 @@ class BodyWidget extends StatefulWidget {
 class _BodyWidgetState extends State<BodyWidget> {
   final CategoryController _controller = Get.find();
 
+  AutoScrollController? _autoScrollControllerCat;
   AutoScrollController? _autoScrollController;
 
   final Map<int, bool> _visibleItems = {0: true};
@@ -30,6 +31,12 @@ class _BodyWidgetState extends State<BodyWidget> {
           Rect.fromLTRB(0, 0, 0, MediaQuery.of(context).padding.bottom),
       axis: Axis.vertical,
     )..addListener(() {});
+
+    _autoScrollControllerCat = AutoScrollController(
+      viewportBoundaryGetter: () =>
+          Rect.fromLTRB(0, 0, 0, MediaQuery.of(context).padding.bottom),
+      axis: Axis.vertical,
+    )..addListener(() {});
   }
 
   void _calculateIndexAndJumpToCategory(Map<int, bool> visibleItems) async {
@@ -40,6 +47,7 @@ class _BodyWidgetState extends State<BodyWidget> {
       setState(() {
         _index = topMostVisibleItem;
       });
+      _scrollToIndex2(_index);
     } catch (e) {}
   }
 
@@ -61,13 +69,57 @@ class _BodyWidgetState extends State<BodyWidget> {
     );
   }
 
+  Widget _wrapScrollTag2({int? index, Widget? child}) {
+    return AutoScrollTag(
+      key: ValueKey(index),
+      controller: _autoScrollControllerCat!,
+      index: index!,
+      child: child!,
+      highlightColor: Colors.black.withOpacity(0.1),
+    );
+  }
+
+  Future _scrollToIndex2(int index) async {
+    _autoScrollControllerCat!
+        .scrollToIndex(index, preferPosition: AutoScrollPosition.middle);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        ListCategoryWidget(
-          onTap: _scrollToIndex,
-          selectedIndex: _index,
+        Container(
+          width: 140,
+          child: ListView(
+            controller: _autoScrollControllerCat,
+            children: List.generate(
+                _controller.categories.length,
+                (index) => _wrapScrollTag2(
+                      index: index,
+                      child: Container(
+                          width: 140,
+                          decoration: BoxDecoration(
+                            border: Border(
+                              top: BorderSide(color: Colors.grey.shade300),
+                            ),
+                          ),
+                          child: TextButton(
+                              onPressed: () {
+                                _scrollToIndex(index);
+                                _scrollToIndex2(index);
+                              },
+                              child: Text(
+                                _controller.categories[index].title,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .subtitle1!
+                                    .copyWith(
+                                        color: _index != index
+                                            ? Colors.grey
+                                            : Theme.of(context).primaryColor),
+                              ))),
+                    )),
+          ),
         ),
         Expanded(
           child: Column(
