@@ -33,12 +33,14 @@ class _BodyWidgetState extends State<BodyWidget> {
   }
 
   void _calculateIndexAndJumpToCategory(Map<int, bool> visibleItems) async {
-    List<int> indexes = List.from(_visibleItems.keys.toList());
-    indexes.sort();
-    int topMostVisibleItem = indexes.first;
-    setState(() {
-      _index = topMostVisibleItem;
-    });
+    try {
+      List<int> indexes = List.from(_visibleItems.keys.toList());
+      indexes.sort();
+      int topMostVisibleItem = indexes.first;
+      setState(() {
+        _index = topMostVisibleItem;
+      });
+    } catch (e) {}
   }
 
   Future _scrollToIndex(int index) async {
